@@ -1,13 +1,17 @@
 const express = require("express");
-
 const app = express();
+const cors = require("cors");
 
-app.use((req, res, next) => {
-  console.log("requete reçu");
-  next();
-});
-app.use((req, res, next) => {
-  res.json({ message: "Votre requête a bien été reçue !" });
-});
+app.use(cors());
+app.get("/", welcome);
+app.post("/api/auth/signup", signUp);
 
+function welcome(req, res) {
+  res.send(`*** Bienvenue sur le server Mon Vieux Grimoire ***`);
+  console;
+}
+
+function signUp(req, res) {
+  res.send("inscription OK");
+}
 module.exports = app;
