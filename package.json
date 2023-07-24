@@ -1,0 +1,14 @@
+{
+  "name": "p7-backend",
+  "version": "1.0.0",
+  "description": "BackEnd Mon vieux grimoire",
+  "main": "server.js",
+  "scripts": {
+    "nodemon": "nodemon server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
