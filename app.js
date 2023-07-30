@@ -25,4 +25,5 @@ app.use(express.json());
 // }
 
 app.use("/api/auth", allRoutes);
+
 module.exports = app;
