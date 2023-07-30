@@ -9,4 +9,11 @@ mongoose
   .then(() => console.log("Connexion à MongoDB réussie !"))
   .catch(() => console.log("Connexion à MongoDB échouée !"));
 
-module.exports = mongoose;
+// const userSchema = new mongoose.Schema({
+//   email: String,
+//   password: String,
+// });
+
+// const user = mongoose.model("User", userSchema);
+
+module.exports = { mongoose };
