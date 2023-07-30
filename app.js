@@ -1,7 +1,8 @@
 const express = require("express");
 const { mongoose } = require("./managers/mongodb.js");
 const app = express();
-const allRoutes = require("./router/index.js");
+const userRoutes = require("./router/user.js");
+const bookRoutes = require("./router/book.js");
 
 const cors = require("cors");
 
@@ -24,6 +25,7 @@ app.use(express.json());
 //   console.log("body content:", body);
 // }
 
-app.use("/api/auth", allRoutes);
+app.use("/api/auth", userRoutes);
+app.use("/api/books", bookRoutes);
 
 module.exports = app;
