@@ -1,5 +1,8 @@
+const { PORT } = require("./managers/env.js");
+
 const http = require("http");
 const app = require("./app");
+if (!PORT) console.warn("PORT should be set in .env (default:4000)");
 
 const normalizePort = (val) => {
   const port = parseInt(val, 10);
@@ -12,7 +15,7 @@ const normalizePort = (val) => {
   }
   return false;
 };
-const port = normalizePort(process.env.PORT || "4000");
+const port = normalizePort(PORT || "4000");
 app.set("port", port);
 
 const errorHandler = (error) => {
