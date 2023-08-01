@@ -39,13 +39,8 @@ exports.getOneBook = (req, res, next) => {
 exports.modifyBook = (req, res, next) => {
   const thing = new Book({
     _id: req.params.id,
-    title: req.body.title,
-    description: req.body.description,
-    imageUrl: req.body.imageUrl,
-    price: req.body.price,
-    userId: req.body.userId,
   });
-  Book.updateOne({ _id: req.params.id }, thing)
+  Book.updateOne({ _id: req.params.id }, { ...req.body, thing })
     .then(() => {
       res.status(201).json({
         message: "Livre modifié avec succes!",
@@ -74,6 +69,20 @@ exports.deleteBook = (req, res, next) => {
 
 exports.getAllBook = (req, res, next) => {
   Book.find()
+    .then((things) => {
+      res.status(200).json(things);
+    })
+    .catch((error) => {
+      res.status(400).json({
+        error: error,
+      });
+    });
+};
+
+exports.getBestRatingBook = (req, res, next) => {
+  Book.find()
+    .sort({ averageRating: -1 })
+    .limit(3)
     .then((things) => {
       res.status(200).json(things);
     })
