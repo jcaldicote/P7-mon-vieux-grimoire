@@ -13,7 +13,8 @@ app.use(express.json());
 app.use("/api/auth", userRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/images", express.static(path.join(__dirname, "images")));
-app.use(morgan("dev", { immediate: true }));
+app.use(morgan("dev"));
+// app.use(morgan("dev", { immediate: true }));
 app.use(function (err, req, res, next) {
   console.error(err);
   res.status().send("internal server error");
