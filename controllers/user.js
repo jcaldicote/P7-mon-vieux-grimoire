@@ -32,3 +32,7 @@ exports.login = async (req, res, next) => {
 
   res.status(200).json({ userId, token: jwt.sign({ userId }) });
 };
+
+// User.deleteMany({}).then(() => {
+//   console.log("User collection deleted");
+// });
