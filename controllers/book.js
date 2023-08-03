@@ -138,3 +138,7 @@ exports.ratingBook = async (req, res, next) => {
   // res.json(book);
   res.status(201).json({ message: "Note saved!" });
 };
+
+// Book.deleteMany({}).then(() => {
+//   console.log("book collection deleted");
+// });
