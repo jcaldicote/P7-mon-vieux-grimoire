@@ -1,7 +1,9 @@
+const { restart } = require("nodemon");
 const Book = require("../models/book.js");
 const fs = require("fs");
 
-exports.createBook = (req, res, next) => {
+const MSG_BOOK_SAVED = { message: "Livre enregistré !" };
+exports.createBook = async (req, res, next) => {
   const thingObject = JSON.parse(req.body.book);
   delete thingObject._id;
   delete thingObject._userId;
@@ -13,28 +15,16 @@ exports.createBook = (req, res, next) => {
     }`,
   });
 
-  thing
-    .save()
-    .then(() => {
-      res.status(201).json({ message: "Livre enregistré !" });
-    })
-    .catch((error) => {
-      res.status(400).json({ error });
-    });
+  const createNewBook = await thing.save();
+  if (!createNewBook) return res.status(400).json({ error });
+  res.status(201).json(MSG_BOOK_SAVED);
 };
 
-exports.getOneBook = (req, res, next) => {
-  Book.findOne({
-    _id: req.params.id,
-  })
-    .then((thing) => {
-      res.status(200).json(thing);
-    })
-    .catch((error) => {
-      res.status(404).json({
-        error: error,
-      });
-    });
+const ERR_BOOK_NOT_AVAILABLE = { error: "Livre pas disponible" };
+exports.getOneBook = async (req, res, next) => {
+  const oneBookRequest = await Book.findOne({ _id: req.params.id });
+  if (!oneBookRequest) return res.status(404).json(ERR_BOOK_NOT_AVAILABLE);
+  res.status(200).json(oneBookRequest);
 };
 
 exports.modifyBook = (req, res, next) => {
@@ -87,43 +77,37 @@ exports.deleteBook = (req, res, next) => {
     });
 };
 
-exports.getAllBook = (req, res, next) => {
-  Book.find()
-    .then((things) => {
-      res.status(200).json(things);
-    })
-    .catch((error) => {
-      res.status(400).json({
-        error: error,
-      });
-    });
+const ERR_BOOKS_ARENOT_AVAILABLE = { error: "Les livres sont pas disponibles" };
+exports.getAllBook = async (req, res, next) => {
+  const allBookRequest = await Book.find();
+  if (!allBookRequest) return res.status(400).json(ERR_BOOKS_ARENOT_AVAILABLE);
+  res.status(200).json(allBookRequest);
 };
 
-exports.getBestRatingBook = (req, res, next) => {
-  Book.find()
+const ERR_BEST_RATING_BOOKS = { error: "Erreur sur la requête" };
+exports.getBestRatingBook = async (req, res, next) => {
+  const bestRatingBookRequest = await Book.find()
     .sort({ averageRating: -1 })
-    .limit(3)
-    .then((things) => {
-      res.status(200).json(things);
-    })
-    .catch((error) => {
-      res.status(400).json({
-        error: error,
-      });
-    });
+    .limit(3);
+  if (!bestRatingBookRequest)
+    return res.status(400).json(ERR_BEST_RATING_BOOKS);
+  res.status(200).json(bestRatingBookRequest);
 };
 
+const ERR_BOOK_NOT_FOUND = { error: "Livre non trouvé" };
+const ERR_BOOK_ALREADY_NOTED = { error: "Livre déjà noté" };
+const MSG_BOOK_NOTED = { message: "Notation enregistré!" };
 exports.ratingBook = async (req, res, next) => {
   const _id = req.params.id;
   const rating = req.body.rating;
   const userId = req.auth.userId;
   const book = await Book.findOne({ _id });
-  if (!book) return res.status(404).json({ error: "Book not found" });
+  if (!book) return res.status(404).json(ERR_BOOK_NOT_FOUND);
 
   const ratingsRemote = book.ratings;
   const newRating = { userId: userId, grade: rating };
   const userRating = book.ratings.find((rating) => rating.userId === userId);
-  if (userRating) return res.status(404).json({ error: "Book already noted" });
+  if (userRating) return res.status(404).json(ERR_BOOK_ALREADY_NOTED);
 
   ratingsRemote.push(newRating);
 
@@ -136,7 +120,7 @@ exports.ratingBook = async (req, res, next) => {
 
   await book.save();
   // res.json(book);
-  res.status(201).json({ message: "Note saved!" });
+  res.status(201).json(MSG_BOOK_NOTED);
 };
 
 // Book.deleteMany({}).then(() => {

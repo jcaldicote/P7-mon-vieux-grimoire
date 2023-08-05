@@ -2,20 +2,23 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user.js");
 const jwt = require("../managers/jwt.js");
 
-exports.signUp = (req, res, next) => {
-  bcrypt
-    .hash(req.body.password, 10)
-    .then((hash) => {
-      const user = new User({
-        email: req.body.email,
-        password: hash,
-      });
-      user
-        .save()
-        .then(() => res.status(201).json({ message: "Utilisateur créé !" }))
-        .catch((error) => res.status(400).json({ error }));
-    })
-    .catch((error) => res.status(500).json({ error }));
+const MSG_USER_CREATED = { message: "Utilisateur créé !" };
+const ERR_USER_CREATED = { error: "Problème durant la création du compte" };
+exports.signUp = async (req, res, next) => {
+  try {
+    const hash = await bcrypt.hash(req.body.password, 10);
+    const user = new User({
+      email: req.body.email,
+      password: hash,
+    });
+
+    const userSave = await user.save();
+    if (!userSave) return res.status(400).json({ error });
+    res.status(201).json(MSG_USER_CREATED);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(ERR_USER_CREATED);
+  }
 };
 
 const ERR_USER_NOT_FOUND = { error: "Utilisateur non trouvé !" };
