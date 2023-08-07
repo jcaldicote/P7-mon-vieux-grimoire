@@ -1,4 +1,3 @@
-const { restart } = require("nodemon");
 const Book = require("../models/book.js");
 const fs = require("fs");
 
@@ -27,54 +26,49 @@ exports.getOneBook = async (req, res, next) => {
   res.status(200).json(oneBookRequest);
 };
 
-exports.modifyBook = (req, res, next) => {
-  const thingObject = req.file
-    ? {
-        ...JSON.parse(req.body.book),
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${
-          req.file.filename
-        }`,
-      }
-    : { ...req.body };
+const MSG_NOT_AUTHORIZED = { message: "Pas le droit de modifié" };
+const ERR_BOOK_CHANGING = { error: "erreur modification du livre" };
+const MSG_BOOK_CHANGED = { message: "Livre modifié !" };
+exports.modifyBook = async (req, res, next) => {
+  try {
+    const thingObject = req.file
+      ? {
+          ...JSON.parse(req.body.book),
+          imageUrl: `${req.protocol}://${req.get("host")}/images/${
+            req.file.filename
+          }`,
+        }
+      : { ...req.body };
+    delete thingObject._userId;
 
-  delete thingObject._userId;
-  Book.findOne({ _id: req.params.id })
-    .then((thing) => {
-      if (thing.userId != req.auth.userId) {
-        res.status(401).json({ message: "Not authorized" });
-      } else {
-        Book.updateOne(
-          { _id: req.params.id },
-          { ...thingObject, _id: req.params.id }
-        )
-          .then(() => res.status(200).json({ message: "Livre modifié!" }))
-          .catch((error) => res.status(401).json({ error }));
-      }
-    })
-    .catch((error) => {
-      res.status(400).json({ error });
-    });
+    const idUrl = req.params.id;
+    const thing = await Book.findOne({ _id: idUrl });
+    if (thing.userId !== req.auth.userId)
+      return res.status(401).json(MSG_NOT_AUTHORIZED);
+
+    await Book.updateOne({ _id: idUrl }, { ...thingObject, _id: idUrl });
+    res.status(200).json(MSG_BOOK_CHANGED);
+  } catch (error) {
+    console.error(error);
+    res.status(400).json(ERR_BOOK_CHANGING);
+  }
 };
 
-exports.deleteBook = (req, res, next) => {
-  Book.findOne({ _id: req.params.id })
-    .then((thing) => {
-      if (thing.userId != req.auth.userId) {
-        res.status(401).json({ message: "Not authorized" });
-      } else {
-        const filename = thing.imageUrl.split("/images/")[1];
-        fs.unlink(`images/${filename}`, () => {
-          Book.deleteOne({ _id: req.params.id })
-            .then(() => {
-              res.status(200).json({ message: "Livre supprimé !" });
-            })
-            .catch((error) => res.status(401).json({ error }));
-        });
-      }
-    })
-    .catch((error) => {
-      res.status(500).json({ error });
+exports.deleteBook = async (req, res, next) => {
+  const findBook = await Book.findOne({ _id: req.params.id });
+
+  if (findBook.userId != req.auth.userId) {
+    res.status(401).json({ message: "Not authorized" });
+  } else {
+    const filename = findBook.imageUrl.split("/images/")[1];
+    fs.unlink(`images/${filename}`, () => {
+      Book.deleteOne({ _id: req.params.id })
+        .then(() => {
+          res.status(200).json({ message: "Livre supprimé !" });
+        })
+        .catch((error) => res.status(401).json({ error }));
     });
+  }
 };
 
 const ERR_BOOKS_ARENOT_AVAILABLE = { error: "Les livres sont pas disponibles" };
