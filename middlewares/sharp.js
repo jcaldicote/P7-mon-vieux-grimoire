@@ -15,8 +15,8 @@ const sharpImage = async (req, res, next) => {
       })
       .toBuffer();
 
-    fs.unlinkSync(req.file.path);
-    fs.writeFileSync(`images/${req.file.filename}`, buffer);
+    await fs.promises.unlink(req.file.path);
+    await fs.promises.writeFile(`images/${req.file.filename}`, buffer);
 
     next();
   } catch (error) {

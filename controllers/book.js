@@ -1,3 +1,4 @@
+const book = require("../models/book.js");
 const Book = require("../models/book.js");
 const fs = require("fs");
 
@@ -90,7 +91,7 @@ exports.getBestRatingBook = async (req, res, next) => {
 
 const ERR_BOOK_NOT_FOUND = { error: "Livre non trouvé" };
 const ERR_BOOK_ALREADY_NOTED = { error: "Livre déjà noté" };
-const MSG_BOOK_NOTED = { message: "Notation enregistré!" };
+
 exports.ratingBook = async (req, res, next) => {
   const _id = req.params.id;
   const rating = req.body.rating;
@@ -113,8 +114,7 @@ exports.ratingBook = async (req, res, next) => {
   book.averageRating = (ratingsSum / ratingsCount).toFixed(2);
 
   await book.save();
-  // res.json(book);
-  res.status(201).json(MSG_BOOK_NOTED);
+  res.status(201).json(book);
 };
 
 // Book.deleteMany({}).then(() => {
